@@ -6,8 +6,8 @@ services:
     container_name: traefik
     restart: unless-stopped
     ports:
-      - "80:80"       # HTTP traffic
-      - "8080:8080"   # Traefik dashboard
+      - "8443:8443"   # HTTP traffic
+      - "9090:8080"   # Traefik dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro  # grants root-equiv host access; see README security notes
@@ -15,37 +15,37 @@ services:
       - proxy
 
   # ── Application 1 ──────────────────────────────────────────────────────────
-  app1:
-    image: nginxdemos/hello:latest
-    container_name: app1
+  hello1:
+    build: ./hello1
+    container_name: hello1
     restart: unless-stopped
     depends_on:
       - db
-    environment:
-      - APP_NAME=app1
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app1.rule=Host(`app1.localhost`)"
-      - "traefik.http.routers.app1.entrypoints=web"
-      - "traefik.http.services.app1.loadbalancer.server.port=80"
+      - "traefik.http.routers.hello1.entrypoints=web"
+      - "traefik.http.routers.hello1.rule=PathPrefix(`/hello1`)"
+      - "traefik.http.middlewares.hello1-strip.stripprefix.prefixes=/hello1"
+      - "traefik.http.routers.hello1.middlewares=hello1-strip"
+      - "traefik.http.services.hello1.loadbalancer.server.port=8080"
     networks:
       - proxy
       - backend
 
   # ── Application 2 ──────────────────────────────────────────────────────────
-  app2:
-    image: nginxdemos/hello:latest
-    container_name: app2
+  hello2:
+    build: ./hello2
+    container_name: hello2
     restart: unless-stopped
     depends_on:
       - db
-    environment:
-      - APP_NAME=app2
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app2.rule=Host(`app2.localhost`)"
-      - "traefik.http.routers.app2.entrypoints=web"
-      - "traefik.http.services.app2.loadbalancer.server.port=80"
+      - "traefik.http.routers.hello2.entrypoints=web"
+      - "traefik.http.routers.hello2.rule=PathPrefix(`/hello2`)"
+      - "traefik.http.middlewares.hello2-strip.stripprefix.prefixes=/hello2"
+      - "traefik.http.routers.hello2.middlewares=hello2-strip"
+      - "traefik.http.services.hello2.loadbalancer.server.port=8081"
     networks:
       - proxy
       - backend

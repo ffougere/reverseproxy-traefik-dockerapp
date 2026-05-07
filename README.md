@@ -1,34 +1,34 @@
 # reverseproxy-traefik-dockerapp
 
-Configuration simple de reverse proxy Traefik avec deux applications et une base de données PostgreSQL.
+Configuration simple de reverse proxy Traefik avec deux applications Flask et une base de données PostgreSQL.
 
 ## Architecture
 
 ```
 Internet
-   │
-   ▼
-Traefik (port 80)
-   ├── app1.localhost  →  app1
-   └── app2.localhost  →  app2
-                              │
-                              ▼
-                             db (PostgreSQL, réseau interne uniquement)
+   |
+   v
+Traefik (port 8443)
+   |-- /hello1  -->  hello1 (Flask, port 8080)
+   |-- /hello2  -->  hello2 (Flask, port 8081)
+                        |
+                        v
+                       db (PostgreSQL, reseau interne uniquement)
 ```
 
-| Service  | Image                  | Rôle                        |
-|----------|------------------------|-----------------------------|
+| Service  | Image / Build          | Role                          |
+|----------|------------------------|-------------------------------|
 | traefik  | traefik:v3.3           | Reverse proxy / load balancer |
-| app1     | nginxdemos/hello       | Application 1               |
-| app2     | nginxdemos/hello       | Application 2               |
-| db       | postgres:17-alpine     | Base de données PostgreSQL  |
+| hello1   | ./hello1 (Flask)       | Application 1                 |
+| hello2   | ./hello2 (Flask)       | Application 2                 |
+| db       | postgres:17-alpine     | Base de donnees PostgreSQL    |
 
-## Prérequis
+## Prerequis
 
-- [Docker](https://docs.docker.com/get-docker/) ≥ 24
+- [Docker](https://docs.docker.com/get-docker/) >= 24
 - [Docker Compose](https://docs.docker.com/compose/) v2
 
-## Démarrage rapide
+## Demarrage rapide
 
 ```bash
 # 1. Copier et adapter les variables d'environnement
@@ -37,46 +37,40 @@ cp .env.example .env
 # 2. Lancer la stack
 docker compose up -d
 
-# 3. Vérifier que tous les services sont up
+# 3. Verifier que tous les services sont up
 docker compose ps
 ```
 
 Les applications sont alors accessibles sur :
 
-- **app1** → http://app1.localhost
-- **app2** → http://app2.localhost
-- **Dashboard Traefik** → http://localhost:8080
-
-> **Note** : `*.localhost` est résolu nativement par la plupart des systèmes d'exploitation modernes. Si ce n'est pas le cas, ajoutez les entrées suivantes dans votre fichier `/etc/hosts` :
-> ```
-> 127.0.0.1  app1.localhost
-> 127.0.0.1  app2.localhost
-> ```
+- **hello1** --> http://localhost:8443/hello1
+- **hello2** --> http://localhost:8443/hello2
+- **Dashboard Traefik** --> http://localhost:9090
 
 ## Variables d'environnement
 
-| Variable          | Valeur par défaut | Description                      |
+| Variable          | Valeur par defaut | Description                      |
 |-------------------|-------------------|----------------------------------|
 | POSTGRES_USER     | appuser           | Utilisateur PostgreSQL           |
 | POSTGRES_PASSWORD | *(obligatoire)*   | Mot de passe PostgreSQL          |
-| POSTGRES_DB       | appdb             | Nom de la base de données        |
+| POSTGRES_DB       | appdb             | Nom de la base de donnees        |
 
-## Sécurité
+## Securite
 
-> Ces notes s'appliquent principalement aux déploiements exposés sur un réseau.
+> Ces notes s'appliquent principalement aux deploiements exposes sur un reseau.
 
 | Point                          | Risque                                                                                      | Recommandation                                                                                      |
 |--------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
-| Dashboard Traefik (`insecure`) | Le dashboard est accessible sans authentification sur le port 8080.                         | Supprimer `insecure: true` et protéger le dashboard avec un middleware `basicAuth` en production.   |
-| Socket Docker monté            | Traefik monte `/var/run/docker.sock` en lecture seule, ce qui donne accès à l'API Docker.   | Utiliser un proxy de socket (ex. [socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)) pour limiter les droits en production. |
-| Mot de passe PostgreSQL        | `POSTGRES_PASSWORD` est obligatoire et doit être défini dans `.env`.                        | Utiliser un mot de passe fort et ne jamais commiter le fichier `.env`.                              |
+| Dashboard Traefik (`insecure`) | Le dashboard est accessible sans authentification sur le port 9090.                         | Supprimer `insecure: true` et proteger le dashboard avec un middleware `basicAuth` en production.   |
+| Socket Docker monte            | Traefik monte `/var/run/docker.sock` en lecture seule, ce qui donne acces a l'API Docker.   | Utiliser un proxy de socket (ex. [socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)) pour limiter les droits en production. |
+| Mot de passe PostgreSQL        | `POSTGRES_PASSWORD` est obligatoire et doit etre defini dans `.env`.                        | Utiliser un mot de passe fort et ne jamais commiter le fichier `.env`.                              |
 
-## Arrêt
+## Arret
 
 ```bash
-# Arrêter la stack (conserve les volumes)
+# Arreter la stack (conserve les volumes)
 docker compose down
 
-# Arrêter et supprimer les volumes (⚠ efface les données)
+# Arreter et supprimer les volumes (efface les donnees)
 docker compose down -v
 ```
