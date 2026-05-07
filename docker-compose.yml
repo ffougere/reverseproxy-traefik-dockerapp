@@ -1,0 +1,38 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"   # Development only – do not use in production
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:8443"
+      - "--api.dashboard=true"
+    ports:
+      - "8443:8443"
+      - "9090:8080"   # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  hello1:
+    build: ./hello1
+    ports:
+      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hello1.entrypoints=web"
+      - "traefik.http.routers.hello1.rule=PathPrefix(`/hello1`)"
+      - "traefik.http.middlewares.hello1-strip.stripprefix.prefixes=/hello1"
+      - "traefik.http.routers.hello1.middlewares=hello1-strip"
+      - "traefik.http.services.hello1.loadbalancer.server.port=8080"
+
+  hello2:
+    build: ./hello2
+    ports:
+      - "8081:8081"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hello2.entrypoints=web"
+      - "traefik.http.routers.hello2.rule=PathPrefix(`/hello2`)"
+      - "traefik.http.middlewares.hello2-strip.stripprefix.prefixes=/hello2"
+      - "traefik.http.routers.hello2.middlewares=hello2-strip"
+      - "traefik.http.services.hello2.loadbalancer.server.port=8081"
