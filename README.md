@@ -58,8 +58,18 @@ Les applications sont alors accessibles sur :
 | Variable          | Valeur par défaut | Description                      |
 |-------------------|-------------------|----------------------------------|
 | POSTGRES_USER     | appuser           | Utilisateur PostgreSQL           |
-| POSTGRES_PASSWORD | changeme          | Mot de passe PostgreSQL          |
+| POSTGRES_PASSWORD | *(obligatoire)*   | Mot de passe PostgreSQL          |
 | POSTGRES_DB       | appdb             | Nom de la base de données        |
+
+## Sécurité
+
+> Ces notes s'appliquent principalement aux déploiements exposés sur un réseau.
+
+| Point                          | Risque                                                                                      | Recommandation                                                                                      |
+|--------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Dashboard Traefik (`insecure`) | Le dashboard est accessible sans authentification sur le port 8080.                         | Supprimer `insecure: true` et protéger le dashboard avec un middleware `basicAuth` en production.   |
+| Socket Docker monté            | Traefik monte `/var/run/docker.sock` en lecture seule, ce qui donne accès à l'API Docker.   | Utiliser un proxy de socket (ex. [socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)) pour limiter les droits en production. |
+| Mot de passe PostgreSQL        | `POSTGRES_PASSWORD` est obligatoire et doit être défini dans `.env`.                        | Utiliser un mot de passe fort et ne jamais commiter le fichier `.env`.                              |
 
 ## Arrêt
 
