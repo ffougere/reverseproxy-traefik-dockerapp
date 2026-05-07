@@ -6,11 +6,11 @@ services:
     container_name: traefik
     restart: unless-stopped
     ports:
-      - "8443:8443"   # HTTP traffic
-      - "9090:8080"   # Traefik dashboard
+      - "9443:9443"   # HTTP traffic
+      - "9095:8080"   # Traefik dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro  # grants root-equiv host access; see README security notes
+      - ./dynamic.yml:/etc/traefik/dynamic.yml:ro
     networks:
       - proxy
 

@@ -1,0 +1,37 @@
+http:
+  routers:
+    hello1:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/hello1`)
+      middlewares:
+        - hello1-strip
+      service: hello1
+
+    hello2:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/hello2`)
+      middlewares:
+        - hello2-strip
+      service: hello2
+
+  middlewares:
+    hello1-strip:
+      stripPrefix:
+        prefixes:
+          - /hello1
+    hello2-strip:
+      stripPrefix:
+        prefixes:
+          - /hello2
+
+  services:
+    hello1:
+      loadBalancer:
+        servers:
+          - url: http://hello1:8080
+    hello2:
+      loadBalancer:
+        servers:
+          - url: http://hello2:8081
