@@ -1,22 +1,26 @@
 services:
+
+  # ── Reverse proxy ──────────────────────────────────────────────────────────
   traefik:
     image: traefik:v3.3
-    command:
-      - "--api.insecure=true"   # Development only – do not use in production
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:8443"
-      - "--api.dashboard=true"
+    container_name: traefik
+    restart: unless-stopped
     ports:
-      - "8443:8443"
+      - "8443:8443"   # HTTP traffic
       - "9090:8080"   # Traefik dashboard
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # grants root-equiv host access; see README security notes
+    networks:
+      - proxy
 
+  # ── Application 1 ──────────────────────────────────────────────────────────
   hello1:
     build: ./hello1
-    ports:
-      - "8080:8080"
+    container_name: hello1
+    restart: unless-stopped
+    depends_on:
+      - db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.hello1.entrypoints=web"
@@ -24,11 +28,17 @@ services:
       - "traefik.http.middlewares.hello1-strip.stripprefix.prefixes=/hello1"
       - "traefik.http.routers.hello1.middlewares=hello1-strip"
       - "traefik.http.services.hello1.loadbalancer.server.port=8080"
+    networks:
+      - proxy
+      - backend
 
+  # ── Application 2 ──────────────────────────────────────────────────────────
   hello2:
     build: ./hello2
-    ports:
-      - "8081:8081"
+    container_name: hello2
+    restart: unless-stopped
+    depends_on:
+      - db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.hello2.entrypoints=web"
@@ -36,3 +46,29 @@ services:
       - "traefik.http.middlewares.hello2-strip.stripprefix.prefixes=/hello2"
       - "traefik.http.routers.hello2.middlewares=hello2-strip"
       - "traefik.http.services.hello2.loadbalancer.server.port=8081"
+    networks:
+      - proxy
+      - backend
+
+  # ── Database ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:17-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  proxy:
+    name: proxy
+  backend:
+    name: backend
+
+volumes:
+  db_data:

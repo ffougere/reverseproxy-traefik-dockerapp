@@ -1,0 +1,18 @@
+api:
+  dashboard: true
+  # insecure: true exposes the dashboard on port 8080 with no authentication.
+  # Fine for local development; remove or add middleware auth before exposing
+  # this port on any network-accessible host.
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":8443"
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: proxy
+
+log:
+  level: INFO
