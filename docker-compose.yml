@@ -1,0 +1,74 @@
+services:
+
+  # ── Reverse proxy ──────────────────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"       # HTTP traffic
+      - "8080:8080"   # Traefik dashboard
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+
+  # ── Application 1 ──────────────────────────────────────────────────────────
+  app1:
+    image: nginxdemos/hello:latest
+    container_name: app1
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - APP_NAME=app1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app1.rule=Host(`app1.localhost`)"
+      - "traefik.http.routers.app1.entrypoints=web"
+      - "traefik.http.services.app1.loadbalancer.server.port=80"
+    networks:
+      - proxy
+      - backend
+
+  # ── Application 2 ──────────────────────────────────────────────────────────
+  app2:
+    image: nginxdemos/hello:latest
+    container_name: app2
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - APP_NAME=app2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app2.rule=Host(`app2.localhost`)"
+      - "traefik.http.routers.app2.entrypoints=web"
+      - "traefik.http.services.app2.loadbalancer.server.port=80"
+    networks:
+      - proxy
+      - backend
+
+  # ── Database ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:17-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  proxy:
+    name: proxy
+  backend:
+    name: backend
+
+volumes:
+  db_data:
