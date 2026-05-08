@@ -6,7 +6,8 @@ import psycopg
 app = Flask(__name__)
 
 
-APP_NAME = "hello1"
+APP_NAME = "green"
+BG_COLOR = "#2E7D32"
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "db"),
     "port": int(os.getenv("DB_PORT", "5432")),
@@ -61,8 +62,20 @@ def db_check():
 @app.route("/", defaults={"_path": ""})
 @app.route("/<path:_path>")
 def hello(_path):
-    return "Hello from App 1!\n"
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><title>{APP_NAME.capitalize()} App</title></head>
+    <body style="margin:0;min-height:100vh;display:flex;align-items:center;
+                 justify-content:center;background:{BG_COLOR};font-family:sans-serif;">
+      <div style="text-align:center;color:#fff;">
+        <h1 style="font-size:4rem;margin:0;">&#127350; {APP_NAME.capitalize()} App</h1>
+        <p style="font-size:1.4rem;opacity:.85;">Routes: /health &nbsp;|&nbsp; /db-check</p>
+      </div>
+    </body>
+    </html>
+    """
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8081)

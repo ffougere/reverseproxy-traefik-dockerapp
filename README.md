@@ -9,19 +9,19 @@ Internet
    |
    v
 Traefik (port 9443)
-   |-- /hello1  -->  hello1 (Flask, port 8080)
-   |-- /hello2  -->  hello2 (Flask, port 8081)
-                        |
-                        v
-                       db (PostgreSQL, reseau interne uniquement)
+   |-- /blue   -->  blue  (Flask, port 8080)  [fond bleu]
+   |-- /green  -->  green (Flask, port 8081)  [fond vert]
+                       |
+                       v
+                      db (PostgreSQL, reseau interne uniquement)
 ```
 
-| Service  | Image / Build          | Role                          |
-|----------|------------------------|-------------------------------|
-| traefik  | traefik:v3.3           | Reverse proxy / load balancer |
-| hello1   | ./hello1 (Flask)       | Application 1                 |
-| hello2   | ./hello2 (Flask)       | Application 2                 |
-| db       | postgres:17-alpine     | Base de donnees PostgreSQL    |
+| Service  | Image / Build         | Couleur | Role                          |
+|----------|-----------------------|---------|-------------------------------|
+| traefik  | traefik:v3.3          | -       | Reverse proxy / load balancer |
+| blue     | ./blue (Flask)        | #1565C0 | Application Blue              |
+| green    | ./green (Flask)       | #2E7D32 | Application Green             |
+| db       | postgres:17-alpine    | -       | Base de donnees PostgreSQL    |
 
 ## Prerequis
 
@@ -43,16 +43,16 @@ docker compose ps
 
 Les applications sont alors accessibles sur :
 
-- **hello1** --> http://localhost:9443/hello1
-- **hello2** --> http://localhost:9443/hello2
+- **blue**  --> http://localhost:9443/blue
+- **green** --> http://localhost:9443/green
 - **Dashboard Traefik** --> http://localhost:9090
 
 Tests de sante :
 
-- **hello1 liveness** --> http://localhost:9443/hello1/health
-- **hello2 liveness** --> http://localhost:9443/hello2/health
-- **hello1 deep health (DB)** --> http://localhost:9443/hello1/db-check
-- **hello2 deep health (DB)** --> http://localhost:9443/hello2/db-check
+- **blue liveness**         --> http://localhost:9443/blue/health
+- **green liveness**        --> http://localhost:9443/green/health
+- **blue deep health (DB)** --> http://localhost:9443/blue/db-check
+- **green deep health (DB)**--> http://localhost:9443/green/db-check
 
 `/health` verifie uniquement que l'application repond (sans acces DB).
 

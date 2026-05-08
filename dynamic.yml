@@ -1,37 +1,37 @@
 http:
   routers:
-    hello1:
+    blue:
       entryPoints:
         - web
-      rule: PathPrefix(`/hello1`)
+      rule: PathPrefix(`/blue`)
       middlewares:
-        - hello1-strip
-      service: hello1
+        - blue-strip
+      service: blue
 
-    hello2:
+    green:
       entryPoints:
         - web
-      rule: PathPrefix(`/hello2`)
+      rule: PathPrefix(`/green`)
       middlewares:
-        - hello2-strip
-      service: hello2
+        - green-strip
+      service: green
 
   middlewares:
-    hello1-strip:
+    blue-strip:
       stripPrefix:
         prefixes:
-          - /hello1
-    hello2-strip:
+          - /blue
+    green-strip:
       stripPrefix:
         prefixes:
-          - /hello2
+          - /green
 
   services:
-    hello1:
+    blue:
       loadBalancer:
         servers:
-          - url: http://hello1:8080
-    hello2:
+          - url: http://blue:8080
+    green:
       loadBalancer:
         servers:
-          - url: http://hello2:8081
+          - url: http://green:8081

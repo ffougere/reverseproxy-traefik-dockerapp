@@ -14,10 +14,10 @@ services:
     networks:
       - proxy
 
-  # ── Application 1 ──────────────────────────────────────────────────────────
-  hello1:
-    build: ./hello1
-    container_name: hello1
+  # ── Application Blue ───────────────────────────────────────────────────────
+  blue:
+    build: ./blue
+    container_name: blue
     restart: unless-stopped
     depends_on:
       - db
@@ -29,19 +29,19 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.hello1.entrypoints=web"
-      - "traefik.http.routers.hello1.rule=PathPrefix(`/hello1`)"
-      - "traefik.http.middlewares.hello1-strip.stripprefix.prefixes=/hello1"
-      - "traefik.http.routers.hello1.middlewares=hello1-strip"
-      - "traefik.http.services.hello1.loadbalancer.server.port=8080"
+      - "traefik.http.routers.blue.entrypoints=web"
+      - "traefik.http.routers.blue.rule=PathPrefix(`/blue`)"
+      - "traefik.http.middlewares.blue-strip.stripprefix.prefixes=/blue"
+      - "traefik.http.routers.blue.middlewares=blue-strip"
+      - "traefik.http.services.blue.loadbalancer.server.port=8080"
     networks:
       - proxy
       - backend
 
-  # ── Application 2 ──────────────────────────────────────────────────────────
-  hello2:
-    build: ./hello2
-    container_name: hello2
+  # ── Application Green ──────────────────────────────────────────────────────
+  green:
+    build: ./green
+    container_name: green
     restart: unless-stopped
     depends_on:
       - db
@@ -53,11 +53,11 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.hello2.entrypoints=web"
-      - "traefik.http.routers.hello2.rule=PathPrefix(`/hello2`)"
-      - "traefik.http.middlewares.hello2-strip.stripprefix.prefixes=/hello2"
-      - "traefik.http.routers.hello2.middlewares=hello2-strip"
-      - "traefik.http.services.hello2.loadbalancer.server.port=8081"
+      - "traefik.http.routers.green.entrypoints=web"
+      - "traefik.http.routers.green.rule=PathPrefix(`/green`)"
+      - "traefik.http.middlewares.green-strip.stripprefix.prefixes=/green"
+      - "traefik.http.routers.green.middlewares=green-strip"
+      - "traefik.http.services.green.loadbalancer.server.port=8081"
     networks:
       - proxy
       - backend
