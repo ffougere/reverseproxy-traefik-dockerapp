@@ -8,7 +8,7 @@ Configuration simple de reverse proxy Traefik avec deux applications Flask et un
 Internet
    |
    v
-Traefik (port 8443)
+Traefik (port 9443)
    |-- /hello1  -->  hello1 (Flask, port 8080)
    |-- /hello2  -->  hello2 (Flask, port 8081)
                         |
@@ -43,9 +43,20 @@ docker compose ps
 
 Les applications sont alors accessibles sur :
 
-- **hello1** --> http://localhost:8443/hello1
-- **hello2** --> http://localhost:8443/hello2
+- **hello1** --> http://localhost:9443/hello1
+- **hello2** --> http://localhost:9443/hello2
 - **Dashboard Traefik** --> http://localhost:9090
+
+Tests de sante :
+
+- **hello1 liveness** --> http://localhost:9443/hello1/health
+- **hello2 liveness** --> http://localhost:9443/hello2/health
+- **hello1 deep health (DB)** --> http://localhost:9443/hello1/db-check
+- **hello2 deep health (DB)** --> http://localhost:9443/hello2/db-check
+
+`/health` verifie uniquement que l'application repond (sans acces DB).
+
+`/db-check` verifie l'application + la connectivite PostgreSQL via create/insert/select.
 
 ## Variables d'environnement
 

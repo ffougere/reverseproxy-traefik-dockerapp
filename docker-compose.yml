@@ -21,6 +21,12 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-appdb}
+      DB_USER: ${POSTGRES_USER:-appuser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.hello1.entrypoints=web"
@@ -39,6 +45,12 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-appdb}
+      DB_USER: ${POSTGRES_USER:-appuser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.hello2.entrypoints=web"
